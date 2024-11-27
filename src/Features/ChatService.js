@@ -104,28 +104,29 @@ export const renameRoom = async (userId, roomId, newName) => {
 export const sendMessage = async (roomId, sender, message) => {
   const { data, error } = await supabase
     .from("messages")
-    .insert([{ room_id: roomId, sender, message }]);
-
+    .insert([{ room_id: roomId, sender, message }])
+    .select("*");
   if (error) {
     console.log(error);
     throw new Error(error.message);
   }
 
+  // console.log(data);
   return data;
 };
 
 // Getting all the messages from the room
 
 export const getAllMessages = async (roomId, userId) => {
-  const { data: userData, error: userError } = supabase
+  const { data: userData, error: userError } = await supabase
     .from("room_members")
     .select("*")
     .eq("user_id", userId);
 
   if (userError) throw new Error(userError.message);
 
-  console.log(userData);
-  // const joinedDate = userDate.created_at;
+  // console.log(userData[0]);
+  const joinedDate = userData[0].created_at;
 
   const { data, error } = await supabase
     .from("messages")

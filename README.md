@@ -45,8 +45,8 @@ Winks is an anonymous chat application built using **React.js** and **Supabase**
    - Configure the database with a `messages` table and a `rooms` table as needed.
    - Add environment variables in a `.env` file:
      ```bash
-     REACT_APP_SUPABASE_URL=your-supabase-url
-     REACT_APP_SUPABASE_KEY=your-supabase-key
+     VITE_APP_SUPABASE_URL=your-supabase-url
+     VITE_APP_SUPABASE_KEY=your-supabase-key
      ```
 
 4. Run the application:

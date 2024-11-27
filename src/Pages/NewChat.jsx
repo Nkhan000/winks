@@ -18,6 +18,7 @@ const Container = styled.section`
   /* height: 150vh; */
   display: flex;
   justify-content: center;
+  overflow: hidden;
   /* padding: 3rem; */
 `;
 
@@ -27,7 +28,6 @@ const ChatContainer = styled.div`
   border: 1px solid;
   background-color: var(--color-grey-0);
   border-radius: 1rem;
-
   display: grid;
   grid-template-columns: 35rem 1fr;
 `;
@@ -46,11 +46,13 @@ function NewChat() {
       setUserId(randomUserId);
       dispatch(addUserId(randomUserId));
     }
+  }, [state.userId]);
 
+  useEffect(() => {
     if (state.userName) {
       setUserName(state.userName);
     }
-  }, [state.userId, state.userName]);
+  }, [state.userName]);
 
   const handleCreateRoom = async () => {
     const roomName = prompt("Enter Room Name : ");
@@ -62,7 +64,6 @@ function NewChat() {
     const userLimit = prompt("Enter limit for the room (min : 2) : ");
     const room = await createRoom(userId, roomName, userLimit, userName);
     dispatch(addNewRoom(room[0].id));
-    // dispatch(addUserName(userName));
     dispatch(removeSelectedRoom());
     dispatch(selectNewRoom(room[0].id));
   };

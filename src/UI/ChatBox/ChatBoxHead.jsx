@@ -5,6 +5,9 @@ import ToggleMenu from "../ToggleMenu";
 const Container = styled.div`
   width: 100%;
 
+  position: sticky;
+  top: 0;
+
   display: flex;
   justify-content: space-between;
   align-items: center;

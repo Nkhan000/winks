@@ -1,14 +1,23 @@
 import styled from "styled-components";
 import { IoMdSend } from "react-icons/io";
 import { CgAttachment } from "react-icons/cg";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { sendMessage } from "../../Features/ChatService";
+import { useForm } from "react-hook-form";
 
-const Container = styled.div`
+const Container = styled.form`
   width: 100%;
   display: grid;
   grid-template-columns: 4rem 1fr 4rem;
   gap: 1rem;
   align-items: center;
-  padding: 0 1rem;
+  padding: 0rem 1rem;
+
+  position: sticky;
+  bottom: 0;
+
+  background-color: var(--color-grey-0);
   /* margin-bottom: 3rem; */
 `;
 
@@ -66,8 +75,54 @@ const FileInput = styled.input`
 `;
 
 function ChatBoxInputDiv() {
+  const {
+    selectedRoom: selectedRoomFromStore,
+    userId,
+    userName,
+  } = useSelector((state) => state.chat);
+
+  const { handleSubmit } = useForm();
+  const [selectedRoom, setSelectedRoom] = useState();
+  const [currentUserId, setCurrentUserId] = useState();
+  const [message, setMessage] = useState();
+  const [isLoading, setIsLoading] = useState(false);
+
+  // setting selected room to current state
+  useEffect(() => {
+    if (selectedRoomFromStore) {
+      setSelectedRoom(selectedRoomFromStore);
+    }
+  }, [selectedRoomFromStore]);
+
+  // setting current userId to current state
+  useEffect(() => {
+    if (userId) {
+      setCurrentUserId(userId);
+    }
+  }, [userId]);
+
+  async function sendMessageFunc(message) {
+    await sendMessage(selectedRoom, currentUserId, message);
+  }
+
+  async function onSubmit(data) {
+    setIsLoading(true);
+
+    try {
+      console.log("sending message");
+      const data = await sendMessage(selectedRoom, currentUserId, message);
+      if (data) {
+        console.log("messege sent");
+        console.log(data);
+        setIsLoading(false);
+      }
+    } catch (err) {
+      console.log("Error sending the message");
+      throw new Error(err.message);
+    }
+  }
   return (
-    <Container>
+    <Container onSubmit={handleSubmit(onSubmit)}>
       <IconDiv aria-label="attach file">
         <label htmlFor="attach-file" aria-label="attach file">
           <CgAttachment />
@@ -76,9 +131,14 @@ function ChatBoxInputDiv() {
         <FileInput type="file" id="attach-file" />
       </IconDiv>
       <InputDiv>
-        <StyledInput placeholder="enter message" />
+        <StyledInput
+          placeholder="enter message"
+          name="message"
+          onChange={(e) => setMessage((s) => (s = e.target.value))}
+          value={message}
+        />
       </InputDiv>
-      <IconDiv aria-label="send">
+      <IconDiv type="submit" aria-label="send">
         <div aria-label="send">
           <IoMdSend />
           <title>send</title>
