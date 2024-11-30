@@ -52,6 +52,7 @@ const ImageDiv = styled.div`
   height: 6.5rem;
   width: 6.5rem;
   position: relative;
+
   ${(props) =>
     props.number === "1" &&
     css`

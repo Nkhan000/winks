@@ -32,7 +32,10 @@ const AddnewTextSm = styled.div`
   color: var(--color-grey-800);
 `;
 
-const BtnsDiv = styled.div``;
+const BtnsDiv = styled.div`
+  display: flex;
+  gap: 2rem;
+`;
 
 function AddNewRoom({ createRoom, joinRoom }) {
   return (

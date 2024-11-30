@@ -105,20 +105,21 @@ function ChatBoxInputDiv() {
     await sendMessage(selectedRoom, currentUserId, message);
   }
 
-  async function onSubmit(data) {
+  async function onSubmit() {
     setIsLoading(true);
 
     try {
       console.log("sending message");
       const data = await sendMessage(selectedRoom, currentUserId, message);
       if (data) {
-        console.log("messege sent");
-        console.log(data);
+        console.log("message sent");
         setIsLoading(false);
       }
     } catch (err) {
       console.log("Error sending the message");
       throw new Error(err.message);
+    } finally {
+      setMessage("");
     }
   }
   return (

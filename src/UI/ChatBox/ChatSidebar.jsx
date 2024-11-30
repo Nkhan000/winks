@@ -170,7 +170,9 @@ function ChatSidebar({ createRoom, joinRoom }) {
           totalRooms.map((item) => roomData(item))
         );
 
-        setRooms(data.map((room) => room[0]));
+        if (data[0].length > 0) {
+          setRooms(data[0]);
+        }
       } catch (err) {
         console.log("Error loading the rooms", err);
       } finally {
@@ -228,18 +230,19 @@ function ChatSidebar({ createRoom, joinRoom }) {
       </SidebarHead>
 
       <ChatOptionsDiv>
-        {rooms &&
+        {!isLoading &&
+          rooms.length > 0 &&
           rooms.map((room) => (
-            <ChatOption key={room.id}>
+            <ChatOption key={room?.id}>
               <ChatIcon>
                 <StyledImg src="./img/3.png" alt="" />
               </ChatIcon>
               <ChatTextDiv>
                 <ChatHeadDiv>
-                  <ChatName>{room.name}</ChatName>
+                  <ChatName>{room?.name}</ChatName>
                   <ChatTime>
                     {(
-                      (new Date() - new Date(room.created_at).getTime()) /
+                      (new Date() - new Date(room?.created_at).getTime()) /
                       60000
                     ).toFixed(0)}{" "}
                     Minutes ago

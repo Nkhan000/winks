@@ -33,36 +33,43 @@ const ChatContainer = styled.div`
 `;
 
 function NewChat() {
-  const state = useSelector((state) => state.chat);
+  const { userId: userIdFromStore, userName: userNameFromStore } = useSelector(
+    (state) => state.chat
+  );
   const dispatch = useDispatch();
   const [userId, setUserId] = useState();
   const [userName, setUserName] = useState("");
 
   useEffect(() => {
-    if (state.userId) {
-      setUserId(state.userId);
+    if (userIdFromStore) {
+      setUserId(userIdFromStore);
     } else {
       const randomUserId = uuidv4();
       setUserId(randomUserId);
       dispatch(addUserId(randomUserId));
     }
-  }, [state.userId]);
+  }, [userIdFromStore]);
 
   useEffect(() => {
-    if (state.userName) {
-      setUserName(state.userName);
+    if (userNameFromStore) {
+      setUserName(userNameFromStore);
     }
-  }, [state.userName]);
+  }, [userNameFromStore]);
 
   const handleCreateRoom = async () => {
     const roomName = prompt("Enter Room Name : ");
+    const userLimit = prompt("Enter limit for the room (min : 2) : ");
+    let user;
     if (!userName) {
-      const user = prompt("Enter User Name : ");
-      setUserName(user);
+      user = prompt("Enter user Name");
       dispatch(addUserName(user));
     }
-    const userLimit = prompt("Enter limit for the room (min : 2) : ");
-    const room = await createRoom(userId, roomName, userLimit, userName);
+    const room = await createRoom(
+      userId,
+      roomName,
+      userLimit,
+      user || userName
+    );
     dispatch(addNewRoom(room[0].id));
     dispatch(removeSelectedRoom());
     dispatch(selectNewRoom(room[0].id));
@@ -70,10 +77,14 @@ function NewChat() {
 
   const handleJoinRoom = async () => {
     const joiningRoomId = prompt("Enter a room id : ");
-    const userName = prompt("Enter User Name : ");
-    const room = await joinRoom(userId, joiningRoomId, userName);
-    dispatch(addNewRoom(room.id));
+    let user;
+    if (!userName) {
+      user = prompt("Enter user Name :");
+      dispatch(addUserName(user));
+    }
 
+    const room = await joinRoom(userId, joiningRoomId, user || userName);
+    dispatch(addNewRoom(room.id));
     dispatch(removeSelectedRoom());
     dispatch(selectNewRoom(room.id));
   };

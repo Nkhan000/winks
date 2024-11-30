@@ -101,10 +101,10 @@ export const renameRoom = async (userId, roomId, newName) => {
 
 // Messaging Functions
 
-export const sendMessage = async (roomId, sender, message) => {
+export const sendMessage = async (roomId, sender, userName, message) => {
   const { data, error } = await supabase
     .from("messages")
-    .insert([{ room_id: roomId, sender, message }])
+    .insert([{ room_id: roomId, sender, user_name: userName, message }])
     .select("*");
   if (error) {
     console.log(error);
