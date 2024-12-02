@@ -46,7 +46,15 @@ export const roomData = async (roomId) => {
 
   if (error) throw new Error(error.message);
 
-  return data[0];
+  const { data: userData, error: userError } = await supabase
+    .from("room_members")
+    .select("user_name")
+    .eq("room_id", roomId);
+
+  const updatedData = data[0];
+  updatedData.users = userData.map((data) => data.user_name);
+
+  return updatedData;
 };
 
 export const joinRoom = async (userId, roomId, userName) => {
@@ -56,12 +64,14 @@ export const joinRoom = async (userId, roomId, userName) => {
     throw new Error("Room not found");
   }
 
-  const limit = room[0].user_limit;
-  const count = room[0].count;
+  const limit = room.user_limit;
+  const count = room.count;
 
   if (count + 1 > limit) {
     throw new Error("Maximum number of users has joined the room");
   }
+
+  // stop users to join again after joine once
 
   const { error: insertError } = await supabase
     .from("room_members")

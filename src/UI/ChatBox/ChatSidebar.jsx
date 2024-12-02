@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getAllRoomData, roomData } from "../../Features/ChatService";
 import { selectNewRoom } from "../../Features/ChatSlice";
+import Loader from "../Spinner";
 // import { Controller } from "react-hook-form";
 
 const ChatSideBar = styled.aside`
@@ -96,6 +97,12 @@ const AddIconDiv = styled.div`
 const ChatOptionsDiv = styled.ul`
   display: flex;
   flex-direction: column;
+  ${(props) =>
+    props.isloading == "true" &&
+    css`
+      align-items: center;
+      padding-top: 4rem;
+    `}
 `;
 
 const ChatOption = styled.li`
@@ -170,12 +177,13 @@ function ChatSidebar({ createRoom, joinRoom }) {
   );
   const dispatch = useDispatch();
   const [rooms, setRooms] = useState([]);
-  // const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (!totalRooms) return;
     const totalRoomsData = async () => {
       try {
+        setIsLoading(true);
         const data = await Promise.all(
           totalRooms.map(async (room) => await roomData(room))
         );
@@ -184,6 +192,8 @@ function ChatSidebar({ createRoom, joinRoom }) {
       } catch (err) {
         console.log("ERROR : ");
         throw new Error(err.message);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -271,7 +281,9 @@ function ChatSidebar({ createRoom, joinRoom }) {
         </AddNewChatDiv>
       </SidebarHead>
 
-      <ChatOptionsDiv>{roomList}</ChatOptionsDiv>
+      <ChatOptionsDiv isloading={`${isLoading}`}>
+        {isLoading && <Loader size="small" />} {!isLoading && roomList}
+      </ChatOptionsDiv>
     </ChatSideBar>
   );
 }

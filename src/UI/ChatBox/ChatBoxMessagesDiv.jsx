@@ -3,13 +3,20 @@ import { useSelector } from "react-redux";
 import styled, { css } from "styled-components";
 import { supabase } from "../../Client/supabaseClient";
 import { getAllMessages, subscribeToMessage } from "../../Features/ChatService";
+import Loader from "../Spinner";
 
 const Container = styled.ul`
   display: flex;
   flex-direction: column;
   gap: 2rem;
-
   padding: 1rem 2rem;
+
+  ${(props) =>
+    props.isloading == "true" &&
+    css`
+      align-items: center;
+      /* padding-top: 8rem; */
+    `}
 `;
 
 const ChatBubbleDiv = styled.li`
@@ -109,7 +116,6 @@ function ChatBoxMessagesDiv() {
 
   const messagesList = useMemo(
     () =>
-      !isLoading &&
       messages.length > 0 &&
       messages.map((msg) => (
         <ChatBubbleDiv isuser={`${msg.sender === userId}`} key={msg.id}>
@@ -134,9 +140,10 @@ function ChatBoxMessagesDiv() {
   );
 
   return (
-    <Container>
-      {isLoading && <h1>LOADING . . . </h1>}
-      {messagesList}
+    <Container isloading={`${isLoading}`}>
+      {isLoading && <Loader size="large" />}
+
+      {!isLoading && messagesList}
     </Container>
   );
 }

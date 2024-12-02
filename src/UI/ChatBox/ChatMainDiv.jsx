@@ -4,7 +4,7 @@ import styled from "styled-components";
 import ChatBoxHead from "./ChatBoxHead";
 import ChatBoxMessagesDiv from "./ChatBoxMessagesDiv";
 import ChatBoxInputDiv from "./ChatBoxInputDiv";
-import { subscribeToJoin } from "../../Features/ChatService";
+import { roomData, subscribeToJoin } from "../../Features/ChatService";
 
 import { useEffect, useState } from "react";
 import AddNewRoom from "./AddNewRoomDiv";
@@ -19,16 +19,7 @@ const Container = styled.div`
 `;
 
 function ChatMainDiv({ createRoom, joinRoom }) {
-  const { selectedRoom: selectedRoomFromStore } = useSelector(
-    (state) => state.chat
-  );
-  const [selectedRoom, setSelectedRoom] = useState();
-
-  useEffect(() => {
-    if (selectedRoomFromStore) {
-      setSelectedRoom(selectedRoomFromStore);
-    }
-  }, [selectedRoomFromStore]);
+  const { selectedRoom } = useSelector((state) => state.chat);
 
   // Getting users count whenever a new user joins the room
   useEffect(() => {
@@ -65,6 +56,7 @@ function ChatMainDiv({ createRoom, joinRoom }) {
     <AddNewRoom createRoom={createRoom} joinRoom={joinRoom} />
   ) : (
     <Container>
+      {/* {currRoomData && console.log(currRoomData)} */}
       <ChatBoxHead />
       <ChatBoxMessagesDiv />
       <ChatBoxInputDiv />
