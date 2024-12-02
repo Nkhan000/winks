@@ -15,11 +15,13 @@ import {
 import { createRoom, joinRoom } from "../Features/ChatService";
 
 const Container = styled.section`
-  /* height: 150vh; */
+  height: 100%;
   display: flex;
-  justify-content: center;
   overflow: hidden;
-  /* padding: 3rem; */
+  background-color: var(--color-grey-0);
+  display: grid;
+  grid-template-columns: 35rem 1fr;
+  height: 98vh;
 `;
 
 const ChatContainer = styled.div`
@@ -33,28 +35,8 @@ const ChatContainer = styled.div`
 `;
 
 function NewChat() {
-  const { userId: userIdFromStore, userName: userNameFromStore } = useSelector(
-    (state) => state.chat
-  );
+  const { userId, userName } = useSelector((state) => state.chat);
   const dispatch = useDispatch();
-  const [userId, setUserId] = useState();
-  const [userName, setUserName] = useState("");
-
-  useEffect(() => {
-    if (userIdFromStore) {
-      setUserId(userIdFromStore);
-    } else {
-      const randomUserId = uuidv4();
-      setUserId(randomUserId);
-      dispatch(addUserId(randomUserId));
-    }
-  }, [userIdFromStore]);
-
-  useEffect(() => {
-    if (userNameFromStore) {
-      setUserName(userNameFromStore);
-    }
-  }, [userNameFromStore]);
 
   const handleCreateRoom = async () => {
     const roomName = prompt("Enter Room Name : ");
@@ -91,10 +73,10 @@ function NewChat() {
 
   return (
     <Container>
-      <ChatContainer>
-        <ChatSidebar createRoom={handleCreateRoom} joinRoom={handleJoinRoom} />
-        <ChatMainDiv createRoom={handleCreateRoom} joinRoom={handleJoinRoom} />
-      </ChatContainer>
+      <ChatSidebar createRoom={handleCreateRoom} joinRoom={handleJoinRoom} />
+      <ChatMainDiv createRoom={handleCreateRoom} joinRoom={handleJoinRoom} />
+      {/* <ChatContainer>
+      </ChatContainer> */}
     </Container>
   );
 }

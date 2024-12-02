@@ -13,7 +13,6 @@ import { useSelector } from "react-redux";
 import { supabase } from "../../Client/supabaseClient";
 
 const Container = styled.div`
-  /* height: 50%; */
   display: grid;
   grid-template-rows: 8rem 1fr 5rem;
   overflow-y: scroll;
@@ -31,18 +30,35 @@ function ChatMainDiv({ createRoom, joinRoom }) {
     }
   }, [selectedRoomFromStore]);
 
+  // Getting users count whenever a new user joins the room
   useEffect(() => {
-    if (selectedRoom) {
-      const handleNewCount = (newCount) => {
-        console.log("User has joined the room. Total counts : ", newCount);
+    if (!selectedRoom) return;
+
+    const handleNewCount = (newCount) => {
+      console.log("User has joined the room. Total counts : ", newCount);
+      let channel;
+      const initializeChannel = async () => {
+        try {
+          channel = await subscribeToJoin(selectedRoom, handleNewCount);
+        } catch (err) {
+          console.log("ERROR : COUNTING COUNTS OF USERS");
+          throw new Error(err.message);
+        }
       };
 
-      const channel = subscribeToJoin(selectedRoom, handleNewCount);
+      initializeChannel();
 
       return () => {
-        supabase.removeChannel(channel);
+        if (channel) {
+          try {
+            supabase.removeChannel(channel);
+            console.log("Channel removed for room:", selectedRoom);
+          } catch (error) {
+            console.error("ERROR: Unable to remove channel", error.message);
+          }
+        }
       };
-    }
+    };
   }, [selectedRoom]);
 
   return !selectedRoom ? (

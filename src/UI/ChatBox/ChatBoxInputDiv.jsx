@@ -106,20 +106,25 @@ function ChatBoxInputDiv() {
   }
 
   async function onSubmit() {
-    setIsLoading(true);
-
     try {
       console.log("sending message");
-      const data = await sendMessage(selectedRoom, currentUserId, message);
+      setIsLoading(true);
+      const data = await sendMessage(
+        selectedRoom,
+        currentUserId,
+        userName,
+        message
+      );
       if (data) {
+        // setIsLoading(false);
         console.log("message sent");
-        setIsLoading(false);
       }
     } catch (err) {
       console.log("Error sending the message");
       throw new Error(err.message);
     } finally {
       setMessage("");
+      setIsLoading(false);
     }
   }
   return (

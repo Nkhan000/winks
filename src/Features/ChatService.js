@@ -28,6 +28,16 @@ export const createRoom = async (ownerId, roomName, userLimit, userName) => {
   return data;
 };
 
+export const getAllRoomData = async (userId) => {
+  const { data, error } = supabase
+    .from("rooms")
+    .eq("user_id", userId)
+    .select("*");
+
+  if (error) throw new Error(error);
+  return data;
+};
+
 export const roomData = async (roomId) => {
   const { data, error } = await supabase
     .from("rooms")
@@ -36,7 +46,7 @@ export const roomData = async (roomId) => {
 
   if (error) throw new Error(error.message);
 
-  return data;
+  return data[0];
 };
 
 export const joinRoom = async (userId, roomId, userName) => {

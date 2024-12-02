@@ -1,12 +1,14 @@
 import { PiChatsCircleFill } from "react-icons/pi";
 import { IoCreate } from "react-icons/io5";
 
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 import ToggleMenu from "../ToggleMenu";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 // import { getAllRooms } from "../../Features/ChatService";
-import { useEffect, useState } from "react";
-import { roomData } from "../../Features/ChatService";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { getAllRoomData, roomData } from "../../Features/ChatService";
+import { selectNewRoom } from "../../Features/ChatSlice";
+// import { Controller } from "react-hook-form";
 
 const ChatSideBar = styled.aside`
   height: 100%;
@@ -42,6 +44,7 @@ const ChatLogoTextDiv = styled.div`
 const ChatLogoTextBg = styled.span`
   font-size: 1.6rem;
   font-family: "Coiny", system-ui;
+  text-transform: capitalize;
 `;
 const ChatLogoTextSm = styled.span`
   font-size: 1rem;
@@ -109,12 +112,17 @@ const ChatOption = styled.li`
   }
 
   &:hover {
-    background-color: var(--color-grey-100);
+    background-color: var(--color-grey-300);
   }
-
   &:active {
     background-color: var(--color-grey-300);
   }
+
+  ${(props) =>
+    props.isactive == "true" &&
+    css`
+      background-color: var(--color-grey-100);
+    `}
 `;
 
 const ChatIcon = styled.div`
@@ -156,38 +164,72 @@ const ChatText = styled.span`
 `;
 
 function ChatSidebar({ createRoom, joinRoom }) {
-  const { userId, selectedRoom, totalRooms } = useSelector(
+  const controller = new AbortController();
+  const { userName, selectedRoom, totalRooms } = useSelector(
     (state) => state.chat
   );
+  const dispatch = useDispatch();
   const [rooms, setRooms] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const fetchRooms = async () => {
-      setIsLoading(true);
+    if (!totalRooms) return;
+    const totalRoomsData = async () => {
       try {
         const data = await Promise.all(
-          totalRooms.map((item) => roomData(item))
+          totalRooms.map(async (room) => await roomData(room))
         );
 
-        if (data[0].length > 0) {
-          setRooms(data[0]);
-        }
+        setRooms(data);
       } catch (err) {
-        console.log("Error loading the rooms", err);
-      } finally {
-        setIsLoading(false);
+        console.log("ERROR : ");
+        throw new Error(err.message);
       }
     };
 
-    if (totalRooms.length > 0) {
-      fetchRooms();
-    }
+    totalRoomsData();
+
+    return () => {
+      controller.abort(); // Abort ongoing fetches on cleanup
+    };
   }, [totalRooms]);
 
-  if (!isLoading) {
-    // console.log(rooms);
-  }
+  const handleSelectRoom = useCallback(
+    (roomId) => {
+      dispatch(selectNewRoom(roomId));
+    },
+    [dispatch]
+  );
+
+  const roomList = useMemo(
+    () =>
+      rooms.length > 0 &&
+      rooms.map((room) => (
+        <ChatOption
+          onClick={() => handleSelectRoom(room.id)}
+          isactive={`${selectedRoom == room.id}`}
+          key={room?.id}
+        >
+          <ChatIcon>
+            <StyledImg src="./img/3.png" alt="" />
+          </ChatIcon>
+          <ChatTextDiv>
+            <ChatHeadDiv>
+              <ChatName>{room?.name}</ChatName>
+              <ChatTime>
+                {(
+                  (new Date() - new Date(room?.created_at).getTime()) /
+                  60000
+                ).toFixed(0)}{" "}
+                Minutes ago
+              </ChatTime>
+            </ChatHeadDiv>
+            <ChatText>Allen : We can afford this I guess</ChatText>
+          </ChatTextDiv>
+        </ChatOption>
+      )),
+    [rooms, selectedRoom, handleSelectRoom]
+  );
 
   return (
     <ChatSideBar>
@@ -200,7 +242,7 @@ function ChatSidebar({ createRoom, joinRoom }) {
           </IconDiv>
 
           <ChatLogoTextDiv>
-            <ChatLogoTextBg>Your Room</ChatLogoTextBg>
+            <ChatLogoTextBg>{userName}</ChatLogoTextBg>
             <ChatLogoTextSm>Created On : 2024/11/15</ChatLogoTextSm>
           </ChatLogoTextDiv>
         </ChatLogoDiv>
@@ -229,30 +271,7 @@ function ChatSidebar({ createRoom, joinRoom }) {
         </AddNewChatDiv>
       </SidebarHead>
 
-      <ChatOptionsDiv>
-        {!isLoading &&
-          rooms.length > 0 &&
-          rooms.map((room) => (
-            <ChatOption key={room?.id}>
-              <ChatIcon>
-                <StyledImg src="./img/3.png" alt="" />
-              </ChatIcon>
-              <ChatTextDiv>
-                <ChatHeadDiv>
-                  <ChatName>{room?.name}</ChatName>
-                  <ChatTime>
-                    {(
-                      (new Date() - new Date(room?.created_at).getTime()) /
-                      60000
-                    ).toFixed(0)}{" "}
-                    Minutes ago
-                  </ChatTime>
-                </ChatHeadDiv>
-                <ChatText>Allen : We can afford this I guess</ChatText>
-              </ChatTextDiv>
-            </ChatOption>
-          ))}
-      </ChatOptionsDiv>
+      <ChatOptionsDiv>{roomList}</ChatOptionsDiv>
     </ChatSideBar>
   );
 }
