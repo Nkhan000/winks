@@ -8,7 +8,7 @@ import { Provider } from "react-redux";
 function PersistGateComponent() {
   return (
     <PersistGate loading={<span>...loading</span>} persistor={persistor}>
-      <Header />
+      {/* <Header /> */}
       <Outlet />
       <Footer />
     </PersistGate>

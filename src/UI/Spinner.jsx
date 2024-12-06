@@ -2,6 +2,7 @@ import React from "react";
 import styled, { css } from "styled-components";
 
 const StyledWrapper = styled.div`
+  height: 100%;
   div {
     ${(props) =>
       props.size == "small" &&

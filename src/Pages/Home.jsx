@@ -4,6 +4,7 @@ import Button from "../UI/Buttons";
 import HowItWorks from "../UI/HowItWorks";
 import { useRef } from "react";
 import { Link } from "react-router-dom";
+import Header from "../UI/Header";
 
 const Container = styled.div`
   /* height: 300vh; */
@@ -11,7 +12,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-
+  padding-bottom: 2rem;
   gap: 25rem;
   /* border-bottom: 1px solid var(--color-grey-100);
   padding-top: 10rem;
@@ -69,31 +70,34 @@ function Home() {
   }
 
   return (
-    <Container>
-      <MainSection>
-        <HeadTextDiv>
-          <HeadTextBg>Connect Instantly, </HeadTextBg>
-          <HeadTextBg> Stay Anonymous</HeadTextBg>
+    <>
+      <Header />
+      <Container>
+        <MainSection>
+          <HeadTextDiv>
+            <HeadTextBg>Connect Instantly, </HeadTextBg>
+            <HeadTextBg> Stay Anonymous</HeadTextBg>
 
-          <HeadTextSm>
-            Instantly connect with people around the world—no sign-ups, no
-            profiles, just real conversations in a space where privacy and
-            freedom come first.
-          </HeadTextSm>
-        </HeadTextDiv>
+            <HeadTextSm>
+              Instantly connect with people around the world—no sign-ups, no
+              profiles, just real conversations in a space where privacy and
+              freedom come first.
+            </HeadTextSm>
+          </HeadTextDiv>
 
-        <BtnsDiv>
-          <Button as={Link} size="medium" variation="primary" to="/new-chat">
-            Start chatting now !
-          </Button>
-          <Button size="medium" variation="secondary" onClick={getIntoView}>
-            How it works ?
-          </Button>
-        </BtnsDiv>
-      </MainSection>
+          <BtnsDiv>
+            <Button as={Link} size="medium" variation="primary" to="/new-chat">
+              Start chatting now !
+            </Button>
+            <Button size="medium" variation="secondary" onClick={getIntoView}>
+              How it works ?
+            </Button>
+          </BtnsDiv>
+        </MainSection>
 
-      <HowItWorks sectionRef={sectionRef} />
-    </Container>
+        <HowItWorks sectionRef={sectionRef} />
+      </Container>
+    </>
   );
 }
 

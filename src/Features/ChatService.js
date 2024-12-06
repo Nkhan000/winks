@@ -10,6 +10,7 @@ export const createRoom = async (ownerId, roomName, userLimit, userName) => {
         user_limit: userLimit,
         count: 1,
         deleted: false,
+        updated_at: new Date(),
       },
     ])
     .select();
@@ -72,6 +73,18 @@ export const joinRoom = async (userId, roomId, userName) => {
   }
 
   // stop users to join again after joine once
+  const { data: roomMemberData, error: roomMemberError } = await supabase
+    .from("room_members")
+    .select("*")
+    .eq("room_id", roomId)
+    .select("user_id");
+
+  if (roomMemberError) throw new Error(roomMemberError.message);
+
+  const membersId = roomMemberData.map((item) => item.user_id);
+  if (membersId.includes(userId)) {
+    throw new Error("User has already joined the room");
+  }
 
   const { error: insertError } = await supabase
     .from("room_members")
@@ -127,11 +140,14 @@ export const sendMessage = async (roomId, sender, userName, message) => {
     .insert([{ room_id: roomId, sender, user_name: userName, message }])
     .select("*");
   if (error) {
-    console.log(error);
     throw new Error(error.message);
   }
 
-  // console.log(data);
+  await supabase
+    .from("rooms")
+    .update({ updated_at: new Date() })
+    .eq("id", roomId);
+
   return data;
 };
 
@@ -147,6 +163,7 @@ export const getAllMessages = async (roomId, userId) => {
 
   // console.log(userData[0]);
   const joinedDate = userData[0].created_at;
+  // console.log(joinedDate);
 
   const { data, error } = await supabase
     .from("messages")
@@ -155,7 +172,6 @@ export const getAllMessages = async (roomId, userId) => {
     .gt("created_at", joinedDate);
 
   if (error) throw new Error(error.message);
-
   return data;
 };
 
@@ -187,10 +203,37 @@ export const subscribeToJoin = async (roomId, handleMessages) => {
       {
         event: "UPDATE",
         schema: "public",
+        table: "room_members",
+        filter: `id=eq.${roomId}`,
+      },
+      (payload) => handleMessages(payload.new)
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "DELETE",
+        schema: "public",
         table: "rooms",
         filter: `id=eq.${roomId}`,
       },
-      (payload) => handleMessages(payload.new.count)
+      (payload) => handleMessages(payload.new)
+    )
+    .subscribe();
+
+  return channel;
+};
+
+export const subscribeToUpdates = async (handleFn) => {
+  const channel = supabase
+    .channel("room_updates")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "rooms",
+      },
+      (payload) => handleFn(payload.new)
     )
     .subscribe();
 

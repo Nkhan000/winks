@@ -50,13 +50,12 @@ function ChatMainDiv({ createRoom, joinRoom }) {
         }
       };
     };
-  }, [selectedRoom]);
+  }, []);
 
   return !selectedRoom ? (
     <AddNewRoom createRoom={createRoom} joinRoom={joinRoom} />
   ) : (
     <Container>
-      {/* {currRoomData && console.log(currRoomData)} */}
       <ChatBoxHead />
       <ChatBoxMessagesDiv />
       <ChatBoxInputDiv />

@@ -6,9 +6,14 @@ import ToggleMenu from "../ToggleMenu";
 import { useDispatch, useSelector } from "react-redux";
 // import { getAllRooms } from "../../Features/ChatService";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { getAllRoomData, roomData } from "../../Features/ChatService";
+import {
+  getAllRoomData,
+  roomData,
+  subscribeToUpdates,
+} from "../../Features/ChatService";
 import { selectNewRoom } from "../../Features/ChatSlice";
 import Loader from "../Spinner";
+import { Link } from "react-router-dom";
 // import { Controller } from "react-hook-form";
 
 const ChatSideBar = styled.aside`
@@ -180,29 +185,102 @@ function ChatSidebar({ createRoom, joinRoom }) {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!totalRooms) return;
-    const totalRoomsData = async () => {
-      try {
-        setIsLoading(true);
-        const data = await Promise.all(
-          totalRooms.map(async (room) => await roomData(room))
-        );
+    if (totalRooms) {
+      const totalRoomsData = async () => {
+        try {
+          setIsLoading(true);
 
-        setRooms(data);
-      } catch (err) {
-        console.log("ERROR : ");
-        throw new Error(err.message);
-      } finally {
-        setIsLoading(false);
+          // fetching data for total rooms user has joined
+          const data = await Promise.all(
+            totalRooms.map(async (room) => await roomData(room))
+          );
+
+          setRooms((prevRooms) => {
+            const updatedRooms = [...prevRooms];
+
+            data.forEach((newRoom) => {
+              const existingIndex = updatedRooms.findIndex(
+                (room) => room.id === newRoom.id
+              );
+
+              if (existingIndex !== -1) {
+                // Update the existing room and move it to the top
+                updatedRooms.splice(existingIndex, 1);
+              }
+
+              // Add the new or updated room to the top
+              updatedRooms.unshift(newRoom);
+            });
+
+            return updatedRooms;
+          });
+        } catch (err) {
+          throw new Error(err.message);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      totalRoomsData();
+    }
+  }, [totalRooms]);
+
+  function handleRoomUpdate(updatedRoom) {
+    setRooms((prevRooms) => {
+      const existingIndex = prevRooms.findIndex(
+        (room) => room.id === updatedRoom.id
+      );
+
+      if (existingIndex !== -1) {
+        // Remove the existing room from its current position
+        prevRooms.splice(existingIndex, 1);
       }
+
+      // Add the updated or new room to the top of the list
+      return [updatedRoom, ...prevRooms];
+    });
+  }
+
+  useEffect(() => {
+    let subscription;
+    const subscribe = async () => {
+      subscription = await subscribeToUpdates(handleRoomUpdate);
     };
 
-    totalRoomsData();
+    subscribe();
 
     return () => {
-      controller.abort(); // Abort ongoing fetches on cleanup
+      if (subscription) {
+        subscription.unsubscribe();
+        // subscription.removeChannel;
+      }
     };
-  }, [totalRooms]);
+  }, []);
+
+  // useEffect(() => {
+  //   if (!totalRooms) return;
+  //   const totalRoomsData = async () => {
+  //     try {
+  //       setIsLoading(true);
+  //       const data = await Promise.all(
+  //         totalRooms.map(async (room) => await roomData(room))
+  //       );
+
+  //       setRooms(data);
+  //     } catch (err) {
+  //       console.log("ERROR : ");
+  //       throw new Error(err.message);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
+
+  //   totalRoomsData();
+
+  //   return () => {
+  //     controller.abort(); // Abort ongoing fetches on cleanup
+  //   };
+  // }, [totalRooms]);
 
   const handleSelectRoom = useCallback(
     (roomId) => {
@@ -211,7 +289,7 @@ function ChatSidebar({ createRoom, joinRoom }) {
     [dispatch]
   );
 
-  const roomList = useMemo(
+  const roomListComponent = useMemo(
     () =>
       rooms.length > 0 &&
       rooms.map((room) => (
@@ -245,14 +323,14 @@ function ChatSidebar({ createRoom, joinRoom }) {
     <ChatSideBar>
       <SidebarHead>
         <ChatLogoDiv>
-          <IconDiv>
+          <IconDiv as={Link} to="/">
             <svg>
               <PiChatsCircleFill />
             </svg>
           </IconDiv>
 
           <ChatLogoTextDiv>
-            <ChatLogoTextBg>{userName}</ChatLogoTextBg>
+            <ChatLogoTextBg>{userName || "Your Name"}</ChatLogoTextBg>
             <ChatLogoTextSm>Created On : 2024/11/15</ChatLogoTextSm>
           </ChatLogoTextDiv>
         </ChatLogoDiv>
@@ -282,7 +360,7 @@ function ChatSidebar({ createRoom, joinRoom }) {
       </SidebarHead>
 
       <ChatOptionsDiv isloading={`${isLoading}`}>
-        {isLoading && <Loader size="small" />} {!isLoading && roomList}
+        {isLoading && <Loader size="small" />} {!isLoading && roomListComponent}
       </ChatOptionsDiv>
     </ChatSideBar>
   );

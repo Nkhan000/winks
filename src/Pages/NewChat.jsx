@@ -15,7 +15,7 @@ import {
 import { createRoom, joinRoom } from "../Features/ChatService";
 
 const Container = styled.section`
-  height: 100%;
+  height: 100vh;
   display: flex;
   overflow: hidden;
   background-color: var(--color-grey-0);
@@ -37,6 +37,12 @@ const ChatContainer = styled.div`
 function NewChat() {
   const { userId, userName } = useSelector((state) => state.chat);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (userId) return;
+    const newUserId = uuidv4();
+    dispatch(addUserId(newUserId));
+  }, [userId]);
 
   const handleCreateRoom = async () => {
     const roomName = prompt("Enter Room Name : ");

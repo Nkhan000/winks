@@ -2,7 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import styled, { css } from "styled-components";
 import { supabase } from "../../Client/supabaseClient";
-import { getAllMessages, subscribeToMessage } from "../../Features/ChatService";
+import {
+  getAllMessages,
+  subscribeToJoin,
+  subscribeToMessage,
+} from "../../Features/ChatService";
 import Loader from "../Spinner";
 
 const Container = styled.ul`
@@ -76,8 +80,15 @@ function ChatBoxMessagesDiv() {
     if (!selectedRoom) return;
 
     const handleGetAllMessages = async () => {
-      const messages = await getAllMessages(selectedRoom, userId);
-      setMessages(messages);
+      setIsLoading(true);
+      try {
+        const messages = await getAllMessages(selectedRoom, userId);
+        setMessages(messages);
+      } catch (err) {
+        throw new Error("Something went wrong while fetchin messages");
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     handleGetAllMessages();
