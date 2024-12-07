@@ -223,17 +223,35 @@ export const subscribeToJoin = async (roomId, handleMessages) => {
   return channel;
 };
 
-export const subscribeToUpdates = async (handleFn) => {
+export const subscribeToUpdates = async (handleFn, handleFnDelete) => {
   const channel = supabase
     .channel("room_updates")
     .on(
       "postgres_changes",
       {
-        event: "*",
+        event: "INSERT",
         schema: "public",
         table: "rooms",
       },
       (payload) => handleFn(payload.new)
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "UPDATE",
+        schema: "public",
+        table: "rooms",
+      },
+      (payload) => handleFn(payload.new)
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "DELETE",
+        schema: "public",
+        table: "rooms",
+      },
+      (payload) => handleFnDelete(payload.old)
     )
     .subscribe();
 

@@ -192,7 +192,11 @@ function ChatSidebar({ createRoom, joinRoom }) {
 
           // fetching data for total rooms user has joined
           const data = await Promise.all(
-            totalRooms.map(async (room) => await roomData(room))
+            totalRooms.map(async (room) => {
+              const res = await roomData(room);
+              console.log(res);
+              return res;
+            })
           );
 
           setRooms((prevRooms) => {
@@ -226,6 +230,7 @@ function ChatSidebar({ createRoom, joinRoom }) {
   }, [totalRooms]);
 
   function handleRoomUpdate(updatedRoom) {
+    if (Object.keys(updatedRoom).length == 0) return;
     setRooms((prevRooms) => {
       const existingIndex = prevRooms.findIndex(
         (room) => room.id === updatedRoom.id
@@ -241,10 +246,21 @@ function ChatSidebar({ createRoom, joinRoom }) {
     });
   }
 
+  function handleRoomDelete(deletedRoom) {
+    if (Object.keys(deletedRoom).length == 0) return;
+
+    setRooms((prevRooms) =>
+      prevRooms.filter((room) => room.id !== deletedRoom.id)
+    );
+  }
+
   useEffect(() => {
     let subscription;
     const subscribe = async () => {
-      subscription = await subscribeToUpdates(handleRoomUpdate);
+      subscription = await subscribeToUpdates(
+        handleRoomUpdate,
+        handleRoomDelete
+      );
     };
 
     subscribe();
@@ -252,35 +268,9 @@ function ChatSidebar({ createRoom, joinRoom }) {
     return () => {
       if (subscription) {
         subscription.unsubscribe();
-        // subscription.removeChannel;
       }
     };
   }, []);
-
-  // useEffect(() => {
-  //   if (!totalRooms) return;
-  //   const totalRoomsData = async () => {
-  //     try {
-  //       setIsLoading(true);
-  //       const data = await Promise.all(
-  //         totalRooms.map(async (room) => await roomData(room))
-  //       );
-
-  //       setRooms(data);
-  //     } catch (err) {
-  //       console.log("ERROR : ");
-  //       throw new Error(err.message);
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
-
-  //   totalRoomsData();
-
-  //   return () => {
-  //     controller.abort(); // Abort ongoing fetches on cleanup
-  //   };
-  // }, [totalRooms]);
 
   const handleSelectRoom = useCallback(
     (roomId) => {
@@ -298,6 +288,7 @@ function ChatSidebar({ createRoom, joinRoom }) {
           isactive={`${selectedRoom == room.id}`}
           key={room?.id}
         >
+          {console.log(room)}
           <ChatIcon>
             <StyledImg src="./img/3.png" alt="" />
           </ChatIcon>
